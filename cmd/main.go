@@ -1,33 +1,22 @@
 package main
 
-import (
-	"context"
-	"fmt"
-	"time"
-)
+import "sync"
 
-func worker(ctx context.Context, name string) {
-	ticker := time.NewTicker(250 * time.Millisecond).C
-
-	for {
-		select {
-		case <-ticker:
-			fmt.Println(name, "tick")
-		case <-ctx.Done():
-			fmt.Println("Recieved signal to finish... exiting...", ctx.Err().Error())
-			fmt.Println(name, "Recieved signal to finish... exiting...")
-			return
-		}
-	}
+type Account struct {
+	mu      sync.RWMutex
+	balance int
 }
 
-func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+func (account *Account) Deposit(amount int) {
+	account.mu.Lock()
+	defer account.mu.Unlock()
+	account.balance += amount
 
-	go worker(ctx, "Worker 1")
-	go worker(ctx, "Worker 2")
+}
 
-	time.Sleep(12 * time.Second)
-	fmt.Println("Main exiting")
+func (account *Account) GetBalance() int {
+	account.mu.RLock()
+	defer account.mu.RUnlock()
+
+	return account.balance
 }
