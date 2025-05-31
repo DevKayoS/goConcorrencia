@@ -13,5 +13,4 @@ func main() {
 
 	n, ok = <-ch
 	fmt.Println("Got a value:", n, "| Is this chanel is closed?", !ok)
-
 }

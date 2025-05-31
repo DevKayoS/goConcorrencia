@@ -1,22 +1,29 @@
 package main
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+	"time"
+)
 
-type Account struct {
-	mu      sync.RWMutex
-	balance int
+func worker(id int, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	fmt.Printf("Worker %d starting \n", id)
+	time.Sleep(time.Millisecond * 500)
+	fmt.Printf("Worker %d done \n", id)
+
 }
 
-func (account *Account) Deposit(amount int) {
-	account.mu.Lock()
-	defer account.mu.Unlock()
-	account.balance += amount
+func main() {
+	var wg sync.WaitGroup
+	const task = 5
 
-}
+	for i := 0; i <= task; i++ {
+		wg.Add(1)
+		go worker(i, &wg)
+	}
+	wg.Wait()
+	fmt.Println("Main done")
 
-func (account *Account) GetBalance() int {
-	account.mu.RLock()
-	defer account.mu.RUnlock()
-
-	return account.balance
 }
